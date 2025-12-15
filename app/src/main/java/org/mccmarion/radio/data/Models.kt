@@ -65,10 +65,10 @@ data class ScheduleDayResponse(
 
 @Serializable
 data class ScheduleProgramResponse(
-    val name: String,
+    val title: String,
     val description: String = "",
-    @SerialName("start_time") val startTime: String,
-    @SerialName("end_time") val endTime: String
+    val time: String,
+    val endTime: String
 )
 
 // UI Models

@@ -65,9 +65,9 @@ class ScheduleService {
                     programs = dayResponse.programs.mapIndexed { programIndex, program ->
                         ScheduleProgram(
                             id = "${dayIndex}_$programIndex",
-                            name = program.name,
+                            name = program.title,
                             description = program.description,
-                            startTime = program.startTime,
+                            startTime = program.time,
                             endTime = program.endTime
                         )
                     }
