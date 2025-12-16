@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#FF6B35</color>
-    <color name="secondary">#E91E63</color>
+    <!-- Match iOS AppColors -->
+    <color name="primary">#9B4D96</color>
+    <color name="secondary">#D4A355</color>
+    <color name="accent">#7DD3FC</color>
     <color name="background">#FFFFFF</color>
     <color name="surface">#F5F5F5</color>
+    <color name="error">#DC2626</color>
+    <color name="success">#10B981</color>
+    <color name="text_light">#6B7280</color>
 </resources>
