@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,9 +7,27 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Load signing secrets
+val secretsFile = rootProject.file("secrets.properties")
+val secrets = Properties()
+if (secretsFile.exists()) {
+    secrets.load(secretsFile.inputStream())
+}
+
 android {
     namespace = "org.mccmarion.radio"
     compileSdk = 35
+
+    signingConfigs {
+        create("release") {
+            if (secretsFile.exists()) {
+                storeFile = rootProject.file(secrets.getProperty("KEYSTORE_FILE"))
+                storePassword = secrets.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = secrets.getProperty("KEY_ALIAS")
+                keyPassword = secrets.getProperty("KEY_PASSWORD")
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "org.mccmarion.radio"
@@ -25,6 +45,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
