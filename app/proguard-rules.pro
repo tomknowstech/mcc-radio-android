@@ -19,3 +19,6 @@
 
 # Keep Media3
 -keep class androidx.media3.** { *; }
+
+# SLF4J
+-dontwarn org.slf4j.impl.StaticLoggerBinder
