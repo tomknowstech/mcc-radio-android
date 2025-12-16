@@ -1,6 +1,5 @@
 package org.mccmarion.radio.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,7 +21,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,7 +33,6 @@ import org.mccmarion.radio.data.Track
 import org.mccmarion.radio.ui.theme.Primary
 import org.mccmarion.radio.ui.theme.Error
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     playbackState: PlaybackState,
@@ -49,115 +45,92 @@ fun PlayerScreen(
     isConnected: Boolean,
     onPlayPause: () -> Unit,
     onReconnect: () -> Unit,
-    onQualityChange: (Config.StreamQuality) -> Unit,
-    shareText: () -> String
+    onQualityChange: (Config.StreamQuality) -> Unit
 ) {
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(Config.STATION_NAME) },
-                actions = {
-                    IconButton(onClick = {
-                        val sendIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, shareText())
-                            type = "text/plain"
-                        }
-                        context.startActivity(Intent.createChooser(sendIntent, "Share"))
-                    }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        Primary.copy(alpha = 0.1f)
+                    )
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Offline Banner
+            if (!isConnected) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OfflineBanner()
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Album Art
+            AlbumArt(imageUrl = albumArtUrl)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Station Info
+            StationInfo()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Now Playing
+            NowPlayingCard(
+                track = currentTrack,
+                isLoading = playbackState.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Play Button
+            PlayButton(
+                isPlaying = playbackState.isPlaying,
+                isLoading = playbackState.isLoading,
+                onClick = {
+                    if (playbackState.errorMessage != null) {
+                        onReconnect()
+                    } else {
+                        onPlayPause()
                     }
                 }
             )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.background,
-                            Primary.copy(alpha = 0.1f)
-                        )
-                    )
-                )
-                .padding(padding)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Offline Banner
-                if (!isConnected) {
-                    OfflineBanner()
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
 
+            // Error Message
+            playbackState.errorMessage?.let { error ->
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Album Art
-                AlbumArt(imageUrl = albumArtUrl)
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Station Info
-                StationInfo()
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Now Playing
-                NowPlayingCard(
-                    track = currentTrack,
-                    isLoading = playbackState.isLoading
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Play Button
-                PlayButton(
-                    isPlaying = playbackState.isPlaying,
-                    isLoading = playbackState.isLoading,
-                    onClick = {
-                        if (playbackState.errorMessage != null) {
-                            onReconnect()
-                        } else {
-                            onPlayPause()
-                        }
-                    }
-                )
-
-                // Error Message
-                playbackState.errorMessage?.let { error ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ErrorCard(message = error, onReconnect = onReconnect)
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Quality Selector
-                QualitySelector(
-                    currentQuality = currentQuality,
-                    onQualityChange = onQualityChange
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Status Bar
-                StatusBar(
-                    isLive = isLive,
-                    streamerName = streamerName,
-                    listeners = listeners
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
+                ErrorCard(message = error, onReconnect = onReconnect)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Quality Selector
+            QualitySelector(
+                currentQuality = currentQuality,
+                onQualityChange = onQualityChange
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Status Bar
+            StatusBar(
+                isLive = isLive,
+                streamerName = streamerName,
+                listeners = listeners
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

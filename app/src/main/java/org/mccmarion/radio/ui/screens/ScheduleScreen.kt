@@ -21,7 +21,6 @@ import org.mccmarion.radio.data.ScheduleProgram
 import org.mccmarion.radio.ui.theme.Primary
 import org.mccmarion.radio.ui.theme.Error
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
     schedule: List<ScheduleDay>,
@@ -32,44 +31,36 @@ fun ScheduleScreen(
 ) {
     var selectedDayIndex by remember { mutableIntStateOf(currentDayIndex) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Schedule") })
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Day Selector
-            DaySelector(
-                schedule = schedule,
-                selectedDayIndex = selectedDayIndex,
-                currentDayIndex = currentDayIndex,
-                onDaySelected = { selectedDayIndex = it }
-            )
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Day Selector - edge to edge
+        DaySelector(
+            schedule = schedule,
+            selectedDayIndex = selectedDayIndex,
+            currentDayIndex = currentDayIndex,
+            onDaySelected = { selectedDayIndex = it }
+        )
 
-            // Content
-            when {
-                isLoading && schedule.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        // Content
+        when {
+            isLoading && schedule.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Primary)
                 }
-                error != null && schedule.isEmpty() -> {
-                    ErrorView(message = error, onRetry = onRefresh)
-                }
-                else -> {
-                    ScheduleList(
-                        schedule = schedule,
-                        selectedDayIndex = selectedDayIndex,
-                        currentDayIndex = currentDayIndex
-                    )
-                }
+            }
+            error != null && schedule.isEmpty() -> {
+                ErrorView(message = error, onRetry = onRefresh)
+            }
+            else -> {
+                ScheduleList(
+                    schedule = schedule,
+                    selectedDayIndex = selectedDayIndex,
+                    currentDayIndex = currentDayIndex
+                )
             }
         }
     }
@@ -83,10 +74,13 @@ private fun DaySelector(
     onDaySelected: (Int) -> Unit
 ) {
     Surface(
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         LazyRow(
-            modifier = Modifier.padding(vertical = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {

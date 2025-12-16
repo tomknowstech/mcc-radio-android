@@ -1,5 +1,6 @@
 package org.mccmarion.radio
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Schedule
@@ -17,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -37,7 +40,7 @@ sealed class Screen(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    data object Player : Screen("player", "Player", Icons.Filled.PlayCircle, Icons.Outlined.PlayCircle)
+    data object Player : Screen("player", Config.STATION_NAME, Icons.Filled.PlayCircle, Icons.Outlined.PlayCircle)
     data object Schedule : Screen("schedule", "Schedule", Icons.Filled.Schedule, Icons.Outlined.Schedule)
     data object About : Screen("about", "About", Icons.Filled.Info, Icons.Outlined.Info)
 }
@@ -46,6 +49,7 @@ class MainActivity : ComponentActivity() {
 
     private val screens = listOf(Screen.Player, Screen.Schedule, Screen.About)
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -58,6 +62,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
+                val context = LocalContext.current
 
                 // Collect states
                 val playbackState by app.audioManager.playbackState.collectAsStateWithLifecycle()
@@ -74,6 +79,11 @@ class MainActivity : ComponentActivity() {
 
                 val coroutineScope = rememberCoroutineScope()
 
+                // Get current screen for title
+                val currentScreen = screens.find { screen ->
+                    currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                } ?: Screen.Player
+
                 // Start metadata polling
                 LaunchedEffect(Unit) {
                     app.metadataService.startPolling()
@@ -86,6 +96,26 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        TopAppBar(
+                            title = { Text(currentScreen.title) },
+                            actions = {
+                                // Show share button only on Player screen
+                                if (currentScreen == Screen.Player) {
+                                    IconButton(onClick = {
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, app.metadataService.shareText())
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(Intent.createChooser(sendIntent, "Share"))
+                                    }) {
+                                        Icon(Icons.Default.Share, contentDescription = "Share")
+                                    }
+                                }
+                            }
+                        )
+                    },
                     bottomBar = {
                         NavigationBar {
                             screens.forEach { screen ->
@@ -97,7 +127,7 @@ class MainActivity : ComponentActivity() {
                                             contentDescription = screen.title
                                         )
                                     },
-                                    label = { Text(screen.title) },
+                                    label = { Text(if (screen == Screen.Player) "Player" else screen.title) },
                                     selected = selected,
                                     onClick = {
                                         navController.navigate(screen.route) {
@@ -130,8 +160,7 @@ class MainActivity : ComponentActivity() {
                                 isConnected = isConnected,
                                 onPlayPause = { app.audioManager.togglePlayPause() },
                                 onReconnect = { app.audioManager.reconnect() },
-                                onQualityChange = { app.audioManager.setQuality(it) },
-                                shareText = { app.metadataService.shareText() }
+                                onQualityChange = { app.audioManager.setQuality(it) }
                             )
                         }
 

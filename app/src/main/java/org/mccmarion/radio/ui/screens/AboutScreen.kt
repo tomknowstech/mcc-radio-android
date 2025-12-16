@@ -24,7 +24,6 @@ import org.mccmarion.radio.ui.theme.Primary
 import org.mccmarion.radio.ui.theme.Secondary
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen() {
     val context = LocalContext.current
@@ -48,128 +47,121 @@ fun AboutScreen() {
         context.startActivity(intent)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("About") })
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Header
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Header
+        Text(
+            "About ${Config.STATION_FULL_NAME}",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Mission Section
+        SectionCard(title = "Our Mission") {
             Text(
-                "About ${Config.STATION_FULL_NAME}",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center
+                Config.ABOUT_TEXT,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.3
             )
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Mission Section
-            SectionCard(title = "Our Mission") {
-                Text(
-                    Config.ABOUT_TEXT,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.3
-                )
+        // Contact Section
+        SectionCard(title = "Contact Us") {
+            ContactRow(
+                icon = Icons.Default.Email,
+                title = "Email",
+                value = Config.CONTACT_EMAIL,
+                onClick = { openEmail(Config.CONTACT_EMAIL) }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            ContactRow(
+                icon = Icons.Default.Phone,
+                title = "Phone",
+                value = Config.CONTACT_PHONE,
+                onClick = { openPhone(Config.CONTACT_PHONE) }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            ContactRow(
+                icon = Icons.Default.Language,
+                title = "Website",
+                value = "mccmarion.org",
+                onClick = { openUrl(Config.WEBSITE_URL) }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Social Links
+        SectionCard(title = "Connect With Us") {
+            Button(
+                onClick = { openUrl(Config.FACEBOOK_URL) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Facebook")
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Contact Section
-            SectionCard(title = "Contact Us") {
-                ContactRow(
-                    icon = Icons.Default.Email,
-                    title = "Email",
-                    value = Config.CONTACT_EMAIL,
-                    onClick = { openEmail(Config.CONTACT_EMAIL) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                ContactRow(
-                    icon = Icons.Default.Phone,
-                    title = "Phone",
-                    value = Config.CONTACT_PHONE,
-                    onClick = { openPhone(Config.CONTACT_PHONE) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                ContactRow(
-                    icon = Icons.Default.Language,
-                    title = "Website",
-                    value = "mccmarion.org",
-                    onClick = { openUrl(Config.WEBSITE_URL) }
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { openUrl(Config.YOUTUBE_URL) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("YouTube")
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Social Links
-            SectionCard(title = "Connect With Us") {
-                Button(
-                    onClick = { openUrl(Config.FACEBOOK_URL) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                ) {
-                    Text("Facebook")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { openUrl(Config.YOUTUBE_URL) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                ) {
-                    Text("YouTube")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Donate Section
-            SectionCard(title = "Support Our Ministry") {
-                Text(
-                    "Your generous donations help us continue spreading the Gospel through music. Every contribution makes a difference!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = { openUrl(Config.DONATE_URL) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Secondary)
-                ) {
-                    Icon(Icons.Default.Favorite, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Donate")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // LPFM Coming Soon
-            LpfmSection()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // App Info
+        // Donate Section
+        SectionCard(title = "Support Our Ministry") {
             Text(
-                "MCC Radio Android App v${BuildConfig.VERSION_NAME}",
-                style = MaterialTheme.typography.bodySmall,
+                "Your generous donations help us continue spreading the Gospel through music. Every contribution makes a difference!",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                "© ${Calendar.getInstance().get(Calendar.YEAR)} My Community Church",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { openUrl(Config.DONATE_URL) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Secondary)
+            ) {
+                Icon(Icons.Default.Favorite, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Donate")
+            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // LPFM Coming Soon
+        LpfmSection()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // App Info
+        Text(
+            "MCC Radio Android App v${BuildConfig.VERSION_NAME}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "© ${Calendar.getInstance().get(Calendar.YEAR)} My Community Church",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
